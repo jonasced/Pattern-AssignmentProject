@@ -3,5 +3,5 @@
 Here all the previous assignments are merged into the final pattern recognition problem
 
 J:
-- Implement project files
+- Implement our own HMM/baumWelch
 

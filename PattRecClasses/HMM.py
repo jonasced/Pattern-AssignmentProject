@@ -87,7 +87,7 @@ class HMM:
     def viterbi(self):
         pass
 
-    def train(self):
+    def baumWelch(self):
         pass
 
     def stateEntropyRate(self):
