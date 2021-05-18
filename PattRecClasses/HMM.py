@@ -47,6 +47,7 @@ class HMM:
     """
     def __init__(self, mc, distributions):
 
+        self.mc = mc
         self.stateGen = mc
         self.outputDistr = distributions
 
@@ -87,7 +88,20 @@ class HMM:
     def viterbi(self):
         pass
 
-    def baumWelch(self):
+    def baumWelch(self, obs, niter):
+        """
+        baumWelch(self, obs, niter); trains the HMM using bw alg on given data obs
+
+        Input:
+        obs=
+        niter=
+
+        Updates:
+        q
+        A
+        B
+        """
+
         pass
 
     def stateEntropyRate(self):
