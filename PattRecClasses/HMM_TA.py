@@ -42,15 +42,15 @@ class HMM:
         else:
             A = self.A
         p, scaled = prob(obs, self.B)
-        if not scale:
+        if not scale: 
             scaled = p
-        c = np.zeros(obs.shape[0])
-        alpha = np.zeros((obs.shape[0], A.shape[0]))
+        c = np.zeros(len(obs))
+        alpha = np.zeros((len(obs), A.shape[0]))
         temp = np.zeros(A.shape[0])
         c[0] = np.sum(self.q*scaled[0])
         alpha[0,:] = (self.q*scaled[0])/c[0]
 
-        for t in range(1, obs.shape[0]):
+        for t in range(1, len(obs)):
             for j in range(A.shape[0]):
                 temp[j] = alpha[t-1].dot(A[:,j]) * scaled[t, j]
             c[t] = np.sum(temp)
@@ -73,7 +73,7 @@ class HMM:
         if not scale:
             scaled = p
         alphas, cs = self.alphahat(obs)
-        beta = np.zeros((obs.shape[0], self.A.shape[0]))
+        beta = np.zeros((len(obs), self.A.shape[0]))
         temp = np.zeros(self.A.shape[0])
         if self.finite:
             temp = self.A[:,-1]
@@ -83,7 +83,7 @@ class HMM:
             temp = temp/cs[-1]
         beta[-1] = temp
         
-        for t in range(obs.shape[0]-2, -1, -1):
+        for t in range(len(obs)-2, -1, -1):
             temp = np.zeros(A.shape[0])
             for i in range(A.shape[0]):                
                 for j in range(A.shape[0]):
@@ -99,14 +99,14 @@ class HMM:
             A = self.A[:,:-1]
         else:
             A = self.A
-        chi = np.zeros((obs.shape[0], A.shape[0]))
-        prev = np.zeros((obs.shape[0]-1, A.shape[0]), dtype=int)
+        chi = np.zeros((len(obs), A.shape[0]))
+        prev = np.zeros((len(obs)-1, A.shape[0]), dtype=int)
         p, scaled = logprob(obs, self.B)
         if not scale:
             scaled = p
         chi[0,:] = np.log(self.q) + scaled[0]
 
-        for t in range(1, obs.shape[0]):
+        for t in range(1, len(obs)):
             for j in range(A.shape[0]):
                 proba = chi[t-1] + np.log(A[:, j])             
                 prev[t-1, j] = np.argmax(proba)
@@ -114,12 +114,12 @@ class HMM:
         
         if self.finite:
             chi[-1] += np.log(self.A[:, -1])
-        ihat = np.zeros(obs.shape[0], dtype = int)
+        ihat = np.zeros(len(obs), dtype = int)
         last = np.argmax(chi[-1, :])
         ihat[0] = last
         
         index = 1
-        for i in range(obs.shape[0]-2, -1, -1):
+        for i in range(len(obs)-2, -1, -1):
             temp = prev[i, int(last)]
             ihat[index] = temp
             last = temp
@@ -130,7 +130,7 @@ class HMM:
     #page 113
     def calcgammas(self, alphahats, betahats, cs, obs, uselog=False):
             gammas = []
-            for i in range(obs.shape[0]):
+            for i in range(len(obs)):
                 temp = []
                 for t in range(obs[i].shape[0]):
                     if uselog:
@@ -139,10 +139,22 @@ class HMM:
                         temp += [alphahats[i][t]*betahats[i][t]*cs[i][t]]
                 gammas += [np.array(temp)]
             gammas = np.array(gammas)
+            #
+            print(len(alphahats))
+            print(len(betahats))
+            print(alphahats[1].shape)
+            print(betahats[1].shape)
+            print(len(obs))
+            print(obs[1].shape)
+            print("GAMMAS", gammas.shape)
+            #
             return gammas
     
     #page 130
     def calcinit(self, gammas, uselog=False):
+        #
+        print("GAMMAS", gammas.shape)
+        #
         if uselog:
             return np.sum(np.exp(gammas[:,0]), axis = 0)/np.sum(np.exp(gammas[:,0]))
         else: 
@@ -152,7 +164,7 @@ class HMM:
         alphahats = []
         betahats = []
         cs = []
-        for i in range(obs.shape[0]):
+        for i in range(len(obs)):
             alph, c = self.alphahat(obs[i])
             beth = self.betahat(obs[i])
             alphahats += [alph]
@@ -164,7 +176,7 @@ class HMM:
     def calcxi(self, alphahats, betahats, cs, obs, uselog=False):
         xirbars = []
         xirs = []
-        for i in range(obs.shape[0]): 
+        for i in range(len(obs)): 
             if self.finite:
                 xi = np.zeros((obs[i].shape[0], self.A.shape[0], self.A.shape[1]))
             else:
@@ -217,6 +229,9 @@ class HMM:
         for it in range(niter):
             alphahats, betahats, cs = self.calcabc(obs) #from Assignment 3 and 4
             gammas = self.calcgammas(alphahats, betahats, cs, obs, uselog) #alpha*beta*c
+            #
+            print("outer GAMMAS", gammas.shape)
+            #
             newpi = self.calcinit(gammas, uselog) #average of gammas[:,0]
             xibar = self.calcxi(alphahats, betahats, cs, obs, uselog) #page 132
             if uselog: 
@@ -231,7 +246,7 @@ class HMM:
             sumc = np.zeros((self.B.shape[0], obs[0].shape[1], obs[0].shape[1]))
             sumg = np.zeros((self.B.shape[0]))
 
-            for i in range(obs.shape[0]):
+            for i in range(len(obs)):
                 for t in range(obs[i].shape[0]): 
                     for j in range(self.B.shape[0]):
                         summ[j] += obs[i][t]*gammas[i][t][j]
@@ -299,6 +314,9 @@ def prob(x, B):
         for j in range(N):
             res[i,j] = B[j].likelihood(x[i])
     scaled = np.zeros(res.shape)
+    #
+    print("PROB FLAG", res.shape) # FLAG
+    #
     for i in range(scaled.shape[0]):
         for j in range(scaled.shape[1]):
             scaled[i, j] = res[i,j]/np.amax(res[i])
