@@ -3,4 +3,4 @@
 Here all the previous assignments are merged into the final pattern recognition problem
 
 J:
-- Looking into data feature visualization so that we can choose better distributions.
+- Debugging the HMM_TA to see why gamma dimensions are weird
