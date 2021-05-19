@@ -384,14 +384,7 @@ def TA_test():
     print("Predicted States:\n", hm_learn.viterbi(obs))
 
 
-def main():
-    # For the code to work you might have to pip install scipy
-    import scipy.stats
-    from matplotlib import pyplot as plt
-    # For the code to work you might have to pip install scipy
-
-    from CharacterFeatureExtractor import featureExtractor
-    from DrawCharacter import DrawCharacter
+def main():  # Used to debug the same code as in the Project jupyter notebook
     import pandas as pd
 
     ### data prep
