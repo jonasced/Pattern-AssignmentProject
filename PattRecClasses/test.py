@@ -1,7 +1,10 @@
+"""
 from DiscreteD import DiscreteD
 from MarkovChain import MarkovChain
 import numpy as np
 from GaussD import GaussD
+"""
+import HMM_TA
 
 def init_pmass_test():
     weight = 5
@@ -113,13 +116,19 @@ def HMM_test():
     g1 = GaussD([2])
     g2 = GaussD([3])
     hmm = HMM(mc, [g1,g2])
-    
+
+
+def HMM_TA_test():
+    HMM_TA.TA_test()
+
 
 def main():
     #discrete_rand_test()
     #markov_test()
     #init_pmass_test()
-    HMM_test()
+    #HMM_test()
+    HMM_TA_test()
+
 
 if __name__ == "__main__":
     main()

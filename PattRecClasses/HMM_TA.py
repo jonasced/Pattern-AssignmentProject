@@ -42,15 +42,15 @@ class HMM:
         else:
             A = self.A
         p, scaled = prob(obs, self.B)
-        if not scale:
+        if not scale: 
             scaled = p
-        c = np.zeros(obs.shape[0])
-        alpha = np.zeros((obs.shape[0], A.shape[0]))
+        c = np.zeros(len(obs))
+        alpha = np.zeros((len(obs), A.shape[0]))
         temp = np.zeros(A.shape[0])
         c[0] = np.sum(self.q*scaled[0])
         alpha[0,:] = (self.q*scaled[0])/c[0]
 
-        for t in range(1, obs.shape[0]):
+        for t in range(1, len(obs)):
             for j in range(A.shape[0]):
                 temp[j] = alpha[t-1].dot(A[:,j]) * scaled[t, j]
             c[t] = np.sum(temp)
@@ -73,7 +73,7 @@ class HMM:
         if not scale:
             scaled = p
         alphas, cs = self.alphahat(obs)
-        beta = np.zeros((obs.shape[0], self.A.shape[0]))
+        beta = np.zeros((len(obs), self.A.shape[0]))
         temp = np.zeros(self.A.shape[0])
         if self.finite:
             temp = self.A[:,-1]
@@ -83,7 +83,7 @@ class HMM:
             temp = temp/cs[-1]
         beta[-1] = temp
         
-        for t in range(obs.shape[0]-2, -1, -1):
+        for t in range(len(obs)-2, -1, -1):
             temp = np.zeros(A.shape[0])
             for i in range(A.shape[0]):                
                 for j in range(A.shape[0]):
@@ -99,14 +99,14 @@ class HMM:
             A = self.A[:,:-1]
         else:
             A = self.A
-        chi = np.zeros((obs.shape[0], A.shape[0]))
-        prev = np.zeros((obs.shape[0]-1, A.shape[0]), dtype=int)
+        chi = np.zeros((len(obs), A.shape[0]))
+        prev = np.zeros((len(obs)-1, A.shape[0]), dtype=int)
         p, scaled = logprob(obs, self.B)
         if not scale:
             scaled = p
         chi[0,:] = np.log(self.q) + scaled[0]
 
-        for t in range(1, obs.shape[0]):
+        for t in range(1, len(obs)):
             for j in range(A.shape[0]):
                 proba = chi[t-1] + np.log(A[:, j])             
                 prev[t-1, j] = np.argmax(proba)
@@ -114,12 +114,12 @@ class HMM:
         
         if self.finite:
             chi[-1] += np.log(self.A[:, -1])
-        ihat = np.zeros(obs.shape[0], dtype = int)
+        ihat = np.zeros(len(obs), dtype = int)
         last = np.argmax(chi[-1, :])
         ihat[0] = last
         
         index = 1
-        for i in range(obs.shape[0]-2, -1, -1):
+        for i in range(len(obs)-2, -1, -1):
             temp = prev[i, int(last)]
             ihat[index] = temp
             last = temp
@@ -130,7 +130,7 @@ class HMM:
     #page 113
     def calcgammas(self, alphahats, betahats, cs, obs, uselog=False):
             gammas = []
-            for i in range(obs.shape[0]):
+            for i in range(len(obs)):
                 temp = []
                 for t in range(obs[i].shape[0]):
                     if uselog:
@@ -139,6 +139,17 @@ class HMM:
                         temp += [alphahats[i][t]*betahats[i][t]*cs[i][t]]
                 gammas += [np.array(temp)]
             gammas = np.array(gammas)
+            """
+            #
+            print(len(alphahats))
+            print(len(betahats))
+            print(alphahats[1].shape)
+            print(betahats[1].shape)
+            print(len(obs))
+            print(obs[1].shape)
+            print("GAMMAS", gammas.shape)
+            #
+            """
             return gammas
     
     #page 130
@@ -152,7 +163,7 @@ class HMM:
         alphahats = []
         betahats = []
         cs = []
-        for i in range(obs.shape[0]):
+        for i in range(len(obs)):
             alph, c = self.alphahat(obs[i])
             beth = self.betahat(obs[i])
             alphahats += [alph]
@@ -164,7 +175,7 @@ class HMM:
     def calcxi(self, alphahats, betahats, cs, obs, uselog=False):
         xirbars = []
         xirs = []
-        for i in range(obs.shape[0]): 
+        for i in range(len(obs)): 
             if self.finite:
                 xi = np.zeros((obs[i].shape[0], self.A.shape[0], self.A.shape[1]))
             else:
@@ -231,7 +242,7 @@ class HMM:
             sumc = np.zeros((self.B.shape[0], obs[0].shape[1], obs[0].shape[1]))
             sumg = np.zeros((self.B.shape[0]))
 
-            for i in range(obs.shape[0]):
+            for i in range(len(obs)):
                 for t in range(obs[i].shape[0]): 
                     for j in range(self.B.shape[0]):
                         summ[j] += obs[i][t]*gammas[i][t][j]
@@ -290,7 +301,8 @@ class multigaussD:
         return self.mean
     def getcov(self):
         return self.cov
-    
+
+
 def prob(x, B):
     T = x.shape[0]
     N = B.shape[0]
@@ -299,6 +311,7 @@ def prob(x, B):
         for j in range(N):
             res[i,j] = B[j].likelihood(x[i])
     scaled = np.zeros(res.shape)
+
     for i in range(scaled.shape[0]):
         for j in range(scaled.shape[1]):
             scaled[i, j] = res[i,j]/np.amax(res[i])
@@ -308,9 +321,9 @@ def prob(x, B):
 def logprob(x, B):
     res, scaled = prob(x,B)
     return np.log(res), np.log(scaled)
-    
 
-def main():
+
+def TA_test():
     '''
     TESTCASES
     '''
@@ -327,9 +340,13 @@ def main():
     B = np.array([multigaussD(means[0], covs[0]),
                 multigaussD(means[1], covs[1])])
 
+    hm = HMM(q, A, B)
 
-    hm  = HMM(q, A, B)
-    obs = np.array([ hm.rand(100)[0] for _ in range(10) ])
+    # obs = np.array([ hm.rand(100)[0] for _ in range(10) ])
+    # New implementation of obs so that it corresponds with ours
+    obs = []
+    for i in range(10):
+        obs += [hm.rand(100)[0]]
 
     print('True HMM parameters:')
     print('q:')
@@ -354,7 +371,6 @@ def main():
     Bstar = np.array([multigaussD(meansstar[0], covsstar[0]),
                     multigaussD(meansstar[1], covsstar[1])])
 
-
     hm_learn = HMM(qstar, Astar, Bstar)
 
     print("Running the Baum Welch Algorithm...")
@@ -366,6 +382,61 @@ def main():
 
     print("True States:\n",true_states)
     print("Predicted States:\n", hm_learn.viterbi(obs))
+
+
+def main():  # Used to debug the same code as in the Project jupyter notebook
+    import pandas as pd
+
+    ### data prep
+    db_name = "database_test"
+    data_features = pd.read_pickle(r'data/' + db_name + '_features.cdb')
+    data_labels = pd.read_pickle(r'data/' + db_name + '_labels.cdb')
+
+    # data_features[k][r] == np.array (ndim, t); K (number of letters) of R samples with Tr individual lengths
+    print((data_features[1][1].shape))
+    print(data_labels)
+
+    # Works! But test on easier features
+
+    ### train for k = 1
+
+    obs = data_features[1]
+
+    # obsTA = np.array([ hm_learn.rand(100)[0] for _ in range(10) ])
+
+    # print(type(obsTA))
+    # print(obsTA[1].shape) == (100,2)
+    # Our data has format (2,15) ! Transpose all datapoints
+    for i in range(len(obs)):
+        obs[i] = np.transpose(obs[i])
+
+    print(len(obs))
+    print(obs[len(obs) - 1].shape)
+    print(type(obs))
+
+    print(obs[1])
+
+    ### training
+
+    # Estimate the HMM parameters from the obseved samples
+    # Start by. assigning initial HMM parameter values,
+    # then refine these iteratively
+    qstar = np.array([0.9, 0.1])
+    Astar = np.array([[0.5, 0.5], [0.5, 0.5]])
+
+    meansstar = np.array([[0, 0], [0, 0]])
+
+    covsstar = np.array([[[1, 0], [0, 1]],
+                         [[1, 0], [0, 1]]])
+
+    Bstar = np.array([multigaussD(meansstar[0], covsstar[0]),
+                      multigaussD(meansstar[1], covsstar[1])])
+
+    hm_learn = HMM(qstar, Astar, Bstar)
+
+    print("Running the Baum Welch Algorithm...")
+    hm_learn.baum_welch(obs, 20, prin=1, uselog=False)
+
 
 if __name__ == "__main__":
     main()
