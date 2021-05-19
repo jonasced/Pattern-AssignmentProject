@@ -3,5 +3,4 @@
 Here all the previous assignments are merged into the final pattern recognition problem
 
 J:
-- Use HMM_TA.py and try to get it to work with our feature extractor
-
+- Currently working in skel branch on implementing the HMM_TA.py with our features. Bad input format of obs is problematic
