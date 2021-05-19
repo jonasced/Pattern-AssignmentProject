@@ -139,6 +139,7 @@ class HMM:
                         temp += [alphahats[i][t]*betahats[i][t]*cs[i][t]]
                 gammas += [np.array(temp)]
             gammas = np.array(gammas)
+            """
             #
             print(len(alphahats))
             print(len(betahats))
@@ -148,13 +149,11 @@ class HMM:
             print(obs[1].shape)
             print("GAMMAS", gammas.shape)
             #
+            """
             return gammas
     
     #page 130
     def calcinit(self, gammas, uselog=False):
-        #
-        print("GAMMAS", gammas.shape)
-        #
         if uselog:
             return np.sum(np.exp(gammas[:,0]), axis = 0)/np.sum(np.exp(gammas[:,0]))
         else: 
@@ -229,9 +228,6 @@ class HMM:
         for it in range(niter):
             alphahats, betahats, cs = self.calcabc(obs) #from Assignment 3 and 4
             gammas = self.calcgammas(alphahats, betahats, cs, obs, uselog) #alpha*beta*c
-            #
-            print("outer GAMMAS", gammas.shape)
-            #
             newpi = self.calcinit(gammas, uselog) #average of gammas[:,0]
             xibar = self.calcxi(alphahats, betahats, cs, obs, uselog) #page 132
             if uselog: 
@@ -305,7 +301,8 @@ class multigaussD:
         return self.mean
     def getcov(self):
         return self.cov
-    
+
+
 def prob(x, B):
     T = x.shape[0]
     N = B.shape[0]
@@ -314,9 +311,7 @@ def prob(x, B):
         for j in range(N):
             res[i,j] = B[j].likelihood(x[i])
     scaled = np.zeros(res.shape)
-    #
-    print("PROB FLAG", res.shape) # FLAG
-    #
+
     for i in range(scaled.shape[0]):
         for j in range(scaled.shape[1]):
             scaled[i, j] = res[i,j]/np.amax(res[i])
@@ -326,9 +321,9 @@ def prob(x, B):
 def logprob(x, B):
     res, scaled = prob(x,B)
     return np.log(res), np.log(scaled)
-    
 
-def main():
+
+def TA_test():
     '''
     TESTCASES
     '''
@@ -345,9 +340,13 @@ def main():
     B = np.array([multigaussD(means[0], covs[0]),
                 multigaussD(means[1], covs[1])])
 
+    hm = HMM(q, A, B)
 
-    hm  = HMM(q, A, B)
-    obs = np.array([ hm.rand(100)[0] for _ in range(10) ])
+    # obs = np.array([ hm.rand(100)[0] for _ in range(10) ])
+    # New implementation of obs so that it corresponds with ours
+    obs = []
+    for i in range(10):
+        obs += [hm.rand(100)[0]]
 
     print('True HMM parameters:')
     print('q:')
@@ -372,7 +371,6 @@ def main():
     Bstar = np.array([multigaussD(meansstar[0], covsstar[0]),
                     multigaussD(meansstar[1], covsstar[1])])
 
-
     hm_learn = HMM(qstar, Astar, Bstar)
 
     print("Running the Baum Welch Algorithm...")
@@ -384,6 +382,68 @@ def main():
 
     print("True States:\n",true_states)
     print("Predicted States:\n", hm_learn.viterbi(obs))
+
+
+def main():
+    # For the code to work you might have to pip install scipy
+    import scipy.stats
+    from matplotlib import pyplot as plt
+    # For the code to work you might have to pip install scipy
+
+    from CharacterFeatureExtractor import featureExtractor
+    from DrawCharacter import DrawCharacter
+    import pandas as pd
+
+    ### data prep
+    db_name = "database_test"
+    data_features = pd.read_pickle(r'data/' + db_name + '_features.cdb')
+    data_labels = pd.read_pickle(r'data/' + db_name + '_labels.cdb')
+
+    # data_features[k][r] == np.array (ndim, t); K (number of letters) of R samples with Tr individual lengths
+    print((data_features[1][1].shape))
+    print(data_labels)
+
+    # Works! But test on easier features
+
+    ### train for k = 1
+
+    obs = data_features[1]
+
+    # obsTA = np.array([ hm_learn.rand(100)[0] for _ in range(10) ])
+
+    # print(type(obsTA))
+    # print(obsTA[1].shape) == (100,2)
+    # Our data has format (2,15) ! Transpose all datapoints
+    for i in range(len(obs)):
+        obs[i] = np.transpose(obs[i])
+
+    print(len(obs))
+    print(obs[len(obs) - 1].shape)
+    print(type(obs))
+
+    print(obs[1])
+
+    ### training
+
+    # Estimate the HMM parameters from the obseved samples
+    # Start by. assigning initial HMM parameter values,
+    # then refine these iteratively
+    qstar = np.array([0.9, 0.1])
+    Astar = np.array([[0.5, 0.5], [0.5, 0.5]])
+
+    meansstar = np.array([[0, 0], [0, 0]])
+
+    covsstar = np.array([[[1, 0], [0, 1]],
+                         [[1, 0], [0, 1]]])
+
+    Bstar = np.array([multigaussD(meansstar[0], covsstar[0]),
+                      multigaussD(meansstar[1], covsstar[1])])
+
+    hm_learn = HMM(qstar, Astar, Bstar)
+
+    print("Running the Baum Welch Algorithm...")
+    hm_learn.baum_welch(obs, 20, prin=1, uselog=False)
+
 
 if __name__ == "__main__":
     main()
