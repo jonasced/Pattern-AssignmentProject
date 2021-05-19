@@ -386,7 +386,6 @@ def TA_test():
 
 def main():  # Used to debug the same code as in the Project jupyter notebook
     import pandas as pd
-
     ### data prep
     db_name = "database_test"
     data_features = pd.read_pickle(r'data/' + db_name + '_features.cdb')
@@ -398,12 +397,14 @@ def main():  # Used to debug the same code as in the Project jupyter notebook
 
     # Works! But test on easier features
 
-    ### train for k = 1
+    ### train for one character (seen from labels)
 
-    obs = data_features[1]
+    ##### TESTING FOR X, char = 4
+
+    char = 4
+    obs = data_features[char]
 
     # obsTA = np.array([ hm_learn.rand(100)[0] for _ in range(10) ])
-
     # print(type(obsTA))
     # print(obsTA[1].shape) == (100,2)
     # Our data has format (2,15) ! Transpose all datapoints
@@ -413,7 +414,6 @@ def main():  # Used to debug the same code as in the Project jupyter notebook
     print(len(obs))
     print(obs[len(obs) - 1].shape)
     print(type(obs))
-
     print(obs[1])
 
     ### training
@@ -421,13 +421,18 @@ def main():  # Used to debug the same code as in the Project jupyter notebook
     # Estimate the HMM parameters from the obseved samples
     # Start by. assigning initial HMM parameter values,
     # then refine these iteratively
-    qstar = np.array([0.9, 0.1])
-    Astar = np.array([[0.5, 0.5], [0.5, 0.5]])
+    qstar = np.array([1, 0])
+    Astar = np.array([[0.9, 0.1], [0, 1]])
 
-    meansstar = np.array([[0, 0], [0, 0]])
+    f1s1mean = 10
+    f1s2mean = 45
+    f2s1mean = -60
+    f2s2mean = 70
 
-    covsstar = np.array([[[1, 0], [0, 1]],
-                         [[1, 0], [0, 1]]])
+    meansstar = np.array([[f1s1mean, f2s1mean], [f1s2mean, f2s2mean]])
+
+    covsstar = np.array([[[1, 1], [1, 1]],
+                         [[1, 1], [1, 1]]])
 
     Bstar = np.array([multigaussD(meansstar[0], covsstar[0]),
                       multigaussD(meansstar[1], covsstar[1])])
