@@ -138,26 +138,15 @@ class HMM:
                     else:
                         temp += [alphahats[i][t]*betahats[i][t]*cs[i][t]]
                 gammas += [np.array(temp)]
-            gammas = np.array(gammas)
-            """
-            #
-            print(len(alphahats))
-            print(len(betahats))
-            print(alphahats[1].shape)
-            print(betahats[1].shape)
-            print(len(obs))
-            print(obs[1].shape)
-            print("GAMMAS", gammas.shape)
-            #
-            """
             return gammas
     
     #page 130
     def calcinit(self, gammas, uselog=False):
+        gamma = np.array([init[0] for init in gammas])
         if uselog:
-            return np.sum(np.exp(gammas[:,0]), axis = 0)/np.sum(np.exp(gammas[:,0]))
-        else: 
-            return np.sum(gammas[:,0], axis = 0)/np.sum(gammas[:,0])
+            return np.sum(np.exp(gamma, axis = 0)/np.sum(np.exp(gamma)))
+        else:
+            return np.sum(gamma, axis = 0)/np.sum(gamma)
     
     def calcabc(self, obs):
         alphahats = []
