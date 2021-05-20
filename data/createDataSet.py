@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from DrawCharacter import *
 from CharacterFeatureExtractor import *
 
-num_char = 5
-num_sample = 5
-char_labels = ["A", "C", "K", "P", "X"]
+num_char = 10
+num_sample = 20
+char_labels = ["A", "C", "K", "P", "X", "T", "+", "N", "V", "4"]
 current_path = os.path.dirname(os.path.abspath(__file__)) 
 list_of_char_lists = []
 list_of_feature_lists = []
