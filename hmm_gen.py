@@ -61,18 +61,20 @@ def hmm_gen(data_features, thr):
             means[i, 0] = np.mean(samples0[i])
             means[i, 1] = np.mean(samples1[i])
 
-        # A (char = 0)
-        # States = 3
+        # Initial prob and transition matrix assignment
         qstar = np.zeros(nStates)
         qstar[0] = 1
         Astar = np.zeros([nStates, nStates])
         for i in range(nStates):
             if i == nStates-1:
-                Astar[i, i] = 1
+                Astar[i,:] = 0.1/nStates
+                Astar[i, i] = 1 - 0.1
             else:
-                Astar[i, i] = 0.9
+                Astar[i,:] = 0.1/nStates
                 Astar[i, i+1] = 0.1
+                Astar[i, i] = 0.8
 
+        # Covariance and B assignment
         temp = []
         for i in range(nStates):
             temp += [np.ones([2, 2])]
