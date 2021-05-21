@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
+import random
 
 
-def dataprep(db_name, data_diff):
+def dataprep(db_name, data_diff=5, shuffle=False):
     """ train_data, test_data = dataprep(db_name, data_diff)
     Input:
         db_name:
@@ -28,6 +29,10 @@ def dataprep(db_name, data_diff):
         for r in range(R):
             data_features[k][r] = np.transpose(data_features[k][r])
 
+        # Shuffles the data before separating into training/testing
+        if shuffle:
+            random.shuffle(data_features[k])
+
         # Divide data into training and testing
         train_obs = data_features[k][0:R-data_diff]
         test_obs = data_features[k][R-data_diff:R]
@@ -38,7 +43,7 @@ def dataprep(db_name, data_diff):
 
 
 def main():
-    train_data, test_data, labels = dataprep("database_inc_sampchar", 5)
+    train_data, test_data, labels = dataprep("database_inc_sampchar")
     print(train_data[1][1].shape)
     print(len(train_data))
     print(len(train_data[1]))
