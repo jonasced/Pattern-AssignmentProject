@@ -1,6 +1,6 @@
 import numpy as np
 from PattRecClasses import HMM_TA
-from classifier import *
+from .classifier import *
 
 """
 Inputs: 
