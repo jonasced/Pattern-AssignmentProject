@@ -1,12 +1,5 @@
 import numpy as np
 import pandas as pd
-import scipy.stats
-from matplotlib import pyplot as plt
-
-from CharacterFeatureExtractor import featureExtractor
-from DrawCharacter import DrawCharacter
-from PattRecClasses import HMM_TA
-from hmm_gen import hmm_gen
 
 
 def dataprep(db_name, data_diff):
@@ -15,47 +8,42 @@ def dataprep(db_name, data_diff):
         db_name:
         data_diff: the difference in testing/training samples
     Output:
-        train_data:
+        train_data: data[k][r] == np.array (ndim, t); K (number of letters) of R samples with Tr individual lengths
         test_data:
-
     """
-    db_name = "database_inc_sampchar"
+    # Read database
     data_features = pd.read_pickle(r'data/' + db_name + '_features.cdb')
     data_labels = pd.read_pickle(r'data/' + db_name + '_labels.cdb')
 
-    # data_features[k][r] == np.array (ndim, t); K (number of letters) of R samples with Tr individual lengths
-    # print((data_features[1][1].shape))
-    print(data_labels)
-    nr_char = len(data_labels)
+    print("Database read is ", db_name)
+    print("Labels used are ", data_labels)
 
     train_data = []
     test_data = []
-    for char in range(nr_char):
-        print("\n")
-        print("------------ CHARACTER", data_labels[char], "------------")
-        # Data preprocessing
-        obs = data_features[char]
-        # obsTA = np.array([ hm_learn.rand(100)[0] for _ in range(10) ])
-        # print(type(obsTA))
-        # print(obsTA[1].shape) == (100,2)
-        # Our data has format (2,15) ! Transpose all datapoints
-        for i in range(len(obs)):
-            obs[i] = np.transpose(obs[i])
+    K = len(data_labels)
+    for k in range(K):
 
-        # data_features[char] = obs  # so we do not have to reinvert the data later
+        # Data preprocessing: invert data s.t. it fits the HMM_TA class.
+        R = len(data_features[k])
+        for r in range(R):
+            data_features[k][r] = np.transpose(data_features[k][r])
 
         # Divide data into training and testing
+        train_obs = data_features[k][0:R-data_diff]
+        test_obs = data_features[k][R-data_diff:R]
+        train_data.append(train_obs)
+        test_data.append(test_obs)
 
-        train_obs = obs[0:len(obs) - data_diff]
-        test_obs = obs[len(obs) - data_diff:len(obs)]
-        train_data += [train_obs]
-        test_data += [test_obs]
     return train_data, test_data, data_labels
 
 
 def main():
     train_data, test_data, labels = dataprep("database_inc_sampchar", 5)
     print(train_data[1][1].shape)
+    print(len(train_data))
+    print(len(train_data[1]))
+    print(type(train_data[1][1]))
+    print(type(train_data[1][1][1]))
 
 
 if __name__ == "__main__":

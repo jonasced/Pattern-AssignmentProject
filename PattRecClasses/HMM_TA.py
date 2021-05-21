@@ -41,10 +41,11 @@ class HMM:
     '''
 
     def alphahat(self, obs, scale=True):
-        if self.finite:
-            A = self.A[:, :-1]
-        else:
-            A = self.A
+        #if self.finite:
+        #    A = self.A[:, :-1]
+        #else:
+        A = self.A
+
         p, scaled = prob(obs, self.B)
         if not scale:
             scaled = p
@@ -70,10 +71,11 @@ class HMM:
     '''
 
     def betahat(self, obs, scale=True):
-        if self.finite:
-            A = self.A[:, :-1]
-        else:
-            A = self.A
+        #if self.finite:
+        #    A = self.A[:, :-1]
+        #else:
+        A = self.A
+
         p, scaled = prob(obs, self.B)
         if not scale:
             scaled = p
@@ -101,10 +103,11 @@ class HMM:
     '''
 
     def viterbi(self, obs, scale=True):
-        if self.finite:
-            A = self.A[:, :-1]
-        else:
-            A = self.A
+        #if self.finite:
+        #    A = self.A[:, :-1]
+        #else:
+        A = self.A
+
         chi = np.zeros((len(obs), A.shape[0]))
         prev = np.zeros((len(obs) - 1, A.shape[0]), dtype=int)
         p, scaled = logprob(obs, self.B)
@@ -203,7 +206,7 @@ class HMM:
         return xibar
 
     def printoutput(self, newmean, newcov):
-        print("Estimated a:")
+        print("Estimated q:")
         print(self.q)
         print()
         print("Estimated A:")
@@ -393,7 +396,7 @@ def TA_test():
 def main():  # Used to debug the same code as in the Project jupyter notebook
     import pandas as pd
     ### data prep
-    db_name = "database_test"
+    db_name = "database_inc_sampchar"
     data_features = pd.read_pickle(r'data/' + db_name + '_features.cdb')
     data_labels = pd.read_pickle(r'data/' + db_name + '_labels.cdb')
 

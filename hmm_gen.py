@@ -3,53 +3,51 @@ from PattRecClasses import HMM_TA
 import pandas as pd
 
 
-def hmm_gen(data_features, thr, print=True):
-    K = len(data_features)
+def hmm_gen(data_features, thr, useprint=False):
+    """ hmms = hmm_gen(data_features,thr): Generates hmm models with feasible starting distributions, to be used in training.
+    Input:
+        data_features[k][r] : np.array (featdim, t), K letters, R samples, Tr lengths
+        thr : int, threshold of where we implement state transitions
+    Output:
+        hmms : list of generated HMM models with approximately ok parameters
+
+    Workflow:
+    1. Assign number of states -> when two samples jump over a treshold value
+    2. Mean of each state, feature
+    3. Variance of each state, feature
+    """
+
     hmms = []
 
+    # Test for correct data structure:
+    featdim = data_features[1][1].shape
+    if featdim[1] != 2:
+        raise Exception("Current dimensions are", featdim, "which are not correct! (15,2) is a correct example.")
+
+    K = len(data_features)
     for k in range(K):
         obs_list = data_features[k]
+        obs = obs_list[0]  # taking one arbitrary sample and using it!
 
-        """ Goals:
-        def hmms = hmm_gen(data_features,thr):
-        
-        Input:
-                data_features[k][r] : np.array (featdim, t), K letters, R samples, Tr lengths
-                thr : int, threshold of where we implement state transitions
-        Output:
-                hmms : list of generated HMM models with approximately ok parameters
-    
-        1. Assign number of states -> when two samples jump over a treshold value
-        
-        2. Mean of each state, feature
-        
-        3. Variance of each state, feature
-    
-        """
-        # for r in range(obs_list):
-        # maybe only do for one sample?
-        # obs = obs_list[r]
-        obs = obs_list[0]  # take one arbitrary sample and use it!
         sample_state = []
         samples0 = []
         samples1 = []
         start = 0
-
-        T = obs.shape[1]
         count = 0
+        T = obs.shape[0]
         for x in range(T):
             count += 1
             if x == T-1:
                 if not start == T-1:
                     sample_state += [x]
-                    sample0 = np.array(obs[0, start-1:x])
-                    sample1 = np.array(obs[1, start-1:x])
+                    sample0 = np.array(obs[start-1:x, 0])
+                    sample1 = np.array(obs[start-1:x, 1])
                     samples0 += [sample0]
                     samples1 += [sample1]
-            elif ((obs[0, x+1] - obs[0, x]) > thr or (obs[1, x + 1] - obs[1, x]) > thr) and count > 2:
+            elif ((obs[x+1, 0] - obs[x, 0]) > thr or (obs[x + 1, 1] - obs[x, 1]) > thr) and count > 2:
                 sample_state += [x]
-                sample0 = np.array(obs[0, start:x+1])
-                sample1 = np.array(obs[1, start:x+1])
+                sample0 = np.array(obs[start:x+1, 0])
+                sample1 = np.array(obs[start:x+1, 1])
                 samples0 += [sample0]
                 samples1 += [sample1]
 
@@ -81,29 +79,21 @@ def hmm_gen(data_features, thr, print=True):
             temp += [HMM_TA.multigaussD(means[i], covsstar[i])]
         Bstar = np.array(temp)
 
-        # Initial prob and transition matrix assignment
-        """ Uniform probability distribution 
-        qstar = np.zeros(nStates)
-        qstar[0:] = 1/nStates
-        Astar = np.zeros([nStates, nStates])
-        for i in range(nStates):
-            Astar[i, :] = 1/nStates
-        """
-        # Weighted towards sequence probabilities
+        # Initial prob and transition matrix assignment, weighted towards sequence probabilities
         qstar = np.zeros(nStates)
         qstar[1:] = 0.1/nStates
         qstar[0] = 0.9
         Astar = np.zeros([nStates, nStates])
         for i in range(nStates):
             if i == nStates-1:
-                Astar[i,:] = 0.1/nStates
+                Astar[i, :] = 0.1/nStates
                 Astar[i, i] = 1 - 0.1
             else:
-                Astar[i,:] = 0.1/nStates
+                Astar[i, :] = 0.1/nStates
                 Astar[i, i+1] = 0.1
                 Astar[i, i] = 0.8
         
-        if print:
+        if useprint:
             print("------------ CHARACTER", k, "------------")
             print("Number of states", nStates)
             print("qstar", qstar)
@@ -111,7 +101,8 @@ def hmm_gen(data_features, thr, print=True):
             print("Bstar mean:", means, "covariance:", covsstar)
             print("\n")
 
-        hmms += [HMM_TA.HMM(qstar, Astar, Bstar)]
+        hmms += [HMM_TA.HMM(qstar, Astar, Bstar, finite=True)]
+
     return hmms
 
 
