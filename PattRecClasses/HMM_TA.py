@@ -204,7 +204,7 @@ class HMM:
 
     def printoutput(self, newmean, newcov):
         print("Estimated a:")
-        print(self.pi)
+        print(self.q)
         print()
         print("Estimated A:")
         print(self.A)
@@ -257,7 +257,7 @@ class HMM:
                     newcov[i] = 0
 
             # update all variables
-            self.pi = newpi
+            self.q = newpi
             self.A = newA
             newB = np.array([multigaussD(newmean[i], newcov[i]) for i in range(self.B.shape[0])])
             self.B = newB

@@ -55,15 +55,41 @@ def hmm_gen(data_features, thr):
                 start = x+1
 
         nStates = len(sample_state)
-        means = np.empty([nStates, 2])
 
+        # Estimate means of each state sequence
+        means = np.empty([nStates, 2])
         for i in range(nStates):
             means[i, 0] = np.mean(samples0[i])
             means[i, 1] = np.mean(samples1[i])
 
+        # Estimate covariance
+        temp = []
+        for i in range(nStates):
+            v0, v1 = [1, 1]
+            if len(samples0[i]) > 1:
+                v0 = np.var(samples0[i])
+            if len(samples1[i]) > 1:
+                v1 = np.var(samples1[i])
+            temp += [np.array([[v0, 0], [0, v1]])]
+        covsstar = np.array(temp)
+
+        # Assign Bstar
+        temp = []
+        for i in range(nStates):
+            temp += [HMM_TA.multigaussD(means[i], covsstar[i])]
+        Bstar = np.array(temp)
+
         # Initial prob and transition matrix assignment
+        """ Uniform probability distribution """
         qstar = np.zeros(nStates)
-        qstar[0] = 1
+        qstar[0:] = 1/nStates
+        Astar = np.zeros([nStates, nStates])
+        for i in range(nStates):
+            Astar[i, :] = 1/nStates
+        """ Weighted towards sequence probabilities
+        qstar = np.zeros(nStates)
+        qstar[1:] = 0.1/nStates
+        qstar[0] = 0.9
         Astar = np.zeros([nStates, nStates])
         for i in range(nStates):
             if i == nStates-1:
@@ -73,24 +99,13 @@ def hmm_gen(data_features, thr):
                 Astar[i,:] = 0.1/nStates
                 Astar[i, i+1] = 0.1
                 Astar[i, i] = 0.8
-
-        # Covariance and B assignment
-        temp = []
-        for i in range(nStates):
-            temp += [np.ones([2, 2])]
-        covsstar = np.array(temp)
-
-        temp = []
-        for i in range(nStates):
-            temp += [HMM_TA.multigaussD(means[i], covsstar[i])]
-        Bstar = np.array(temp)
-
+        """
 
         print("------------ CHARACTER", k, "------------")
         print("Number of states", nStates)
         print("qstar", qstar)
         print("Astar", Astar)
-        print("Bstar", means)
+        print("Bstar mean:", means, "covariance:", covsstar)
         print("\n")
         hmms += [HMM_TA.HMM(qstar, Astar, Bstar)]
     return hmms
