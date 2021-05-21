@@ -35,8 +35,8 @@ def hmm_gen(data_features, thr):
         samples1 = []
         start = 0
 
-        Tr = obs.shape[1]
-        for x in range(Tr):
+        T = obs.shape[1]
+        for x in range(T):
             if x == Tr-1:
                 if not start == Tr-1:
                     sample_state += [x]
@@ -65,7 +65,7 @@ def hmm_gen(data_features, thr):
         # Estimate covariance
         temp = []
         for i in range(nStates):
-            v0, v1 = [1, 1]
+            v0, v1 = [1, 1] 
             if len(samples0[i]) > 1:
                 v0 = np.var(samples0[i])
             if len(samples1[i]) > 1:
