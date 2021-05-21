@@ -1,0 +1,52 @@
+import numpy as np
+from hmm_gen import hmm_gen
+from dataprep import dataprep
+
+
+def modeltrain(train_data, labels, iter, useprint=False):
+    """
+    hmm_learn, train_acc = modeltrain(train_data, labels): Trains hmms and outputs them in a list
+
+    Input:
+        train_data: train_data[k][r] is a np array of features
+        labels: length K list of labels
+
+    Output:
+        hmm_learn: leangth K list of learned hmms
+        train_acc: length K list of training accuracies, being the probability of the entire sequence belonging
+            to the specific model
+    """
+    # Initialize hmms with feasible parameters
+    hmm_learn = hmm_gen(train_data, 10, useprint=False)
+
+    train_acc = []
+    K = len(train_data)
+    for k in range(K):
+        print("\n ------------ CHARACTER ", labels[k], "------------")
+
+        # Training
+        hmm_learn[k].baum_welch(train_data[k], iter, prin=1, uselog=False)
+
+        # Training accuracy
+        lprob_list = []
+        for r in range(len(train_data[k])):
+            a, c = hmm_learn[k].alphahat(train_data[k][r])
+            # print("c is", c)
+            clog = np.log(c)
+            lprob = np.sum(np.array(clog))
+            lprob_list += [lprob]
+        avg = np.mean(np.array(lprob_list))
+        train_acc += [avg]
+        print("Avg probability over test samples is", np.exp(avg))
+
+    return hmm_learn, train_acc
+
+
+def main():
+    train_data, test_data, labels = dataprep("database_inc_sampchar", 10)
+
+    modeltrain(train_data, labels, 20)
+
+
+if __name__ == "__main__":
+    main()
