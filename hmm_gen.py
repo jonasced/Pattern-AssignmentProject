@@ -3,7 +3,7 @@ from PattRecClasses import HMM_TA
 import pandas as pd
 
 
-def hmm_gen(data_features, thr):
+def hmm_gen(data_features, thr, print=True):
     K = len(data_features)
     hmms = []
 
@@ -36,16 +36,17 @@ def hmm_gen(data_features, thr):
         start = 0
 
         T = obs.shape[1]
+        count = 0
         for x in range(T):
-            if x == Tr-1:
-                if not start == Tr-1:
+            count += 1
+            if x == T-1:
+                if not start == T-1:
                     sample_state += [x]
                     sample0 = np.array(obs[0, start-1:x])
                     sample1 = np.array(obs[1, start-1:x])
                     samples0 += [sample0]
                     samples1 += [sample1]
-
-            elif (obs[0, x+1] - obs[0, x]) > thr or (obs[1, x + 1] - obs[1, x]) > thr:
+            elif ((obs[0, x+1] - obs[0, x]) > thr or (obs[1, x + 1] - obs[1, x]) > thr) and count > 2:
                 sample_state += [x]
                 sample0 = np.array(obs[0, start:x+1])
                 sample1 = np.array(obs[1, start:x+1])
@@ -53,6 +54,7 @@ def hmm_gen(data_features, thr):
                 samples1 += [sample1]
 
                 start = x+1
+                count = 0
 
         nStates = len(sample_state)
 
@@ -80,13 +82,14 @@ def hmm_gen(data_features, thr):
         Bstar = np.array(temp)
 
         # Initial prob and transition matrix assignment
-        """ Uniform probability distribution """
+        """ Uniform probability distribution 
         qstar = np.zeros(nStates)
         qstar[0:] = 1/nStates
         Astar = np.zeros([nStates, nStates])
         for i in range(nStates):
             Astar[i, :] = 1/nStates
-        """ Weighted towards sequence probabilities
+        """
+        # Weighted towards sequence probabilities
         qstar = np.zeros(nStates)
         qstar[1:] = 0.1/nStates
         qstar[0] = 0.9
@@ -99,14 +102,15 @@ def hmm_gen(data_features, thr):
                 Astar[i,:] = 0.1/nStates
                 Astar[i, i+1] = 0.1
                 Astar[i, i] = 0.8
-        """
+        
+        if print:
+            print("------------ CHARACTER", k, "------------")
+            print("Number of states", nStates)
+            print("qstar", qstar)
+            print("Astar", Astar)
+            print("Bstar mean:", means, "covariance:", covsstar)
+            print("\n")
 
-        print("------------ CHARACTER", k, "------------")
-        print("Number of states", nStates)
-        print("qstar", qstar)
-        print("Astar", Astar)
-        print("Bstar mean:", means, "covariance:", covsstar)
-        print("\n")
         hmms += [HMM_TA.HMM(qstar, Astar, Bstar)]
     return hmms
 
