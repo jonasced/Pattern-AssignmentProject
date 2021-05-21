@@ -204,7 +204,7 @@ class HMM:
 
     def printoutput(self, newmean, newcov):
         print("Estimated a:")
-        print(self.pi)
+        print(self.q)
         print()
         print("Estimated A:")
         print(self.A)
@@ -257,7 +257,7 @@ class HMM:
                     newcov[i] = 0
 
             # update all variables
-            self.pi = newpi
+            self.q = newpi
             self.A = newA
             newB = np.array([multigaussD(newmean[i], newcov[i]) for i in range(self.B.shape[0])])
             self.B = newB
@@ -404,19 +404,15 @@ def main():  # Used to debug the same code as in the Project jupyter notebook
     # train for one character (seen from labels)
 
     hm_learn = [0,0,0,0,0]
-
-    # Start by assigning initial HMM parameter values,
-    # then refine these iteratively
-    
     # A (char = 0)
     # States = 3
     qstar = np.array([1, 0, 0])
     Astar = np.array([[0.9, 0.1, 0], [0, 0.9, 0.1], [0, 0, 1]])
-    meansstar = np.array([[10, 60], [10, -70], [40,0]])
+    meansstar = np.array([[10, 60], [10, -70], [40, 0]])
     covsstar = np.array([[[1, 1], [1, 1]],
-                         [[1, 1], [1, 1]], [[1,1],[1,1]]])
+                         [[1, 1], [1, 1]], [[1, 1], [1, 1]]])
     Bstar = np.array([multigaussD(meansstar[0], covsstar[0]),
-                      multigaussD(meansstar[1], covsstar[1]), 
+                      multigaussD(meansstar[1], covsstar[1]),
                       multigaussD(meansstar[2], covsstar[2])])
 
     hm_learn[0] = HMM(qstar, Astar, Bstar)
@@ -436,81 +432,45 @@ def main():  # Used to debug the same code as in the Project jupyter notebook
 
     hm_learn[4] = HMM(qstar, Astar, Bstar)
 
-    # Train and test for X
-    char = 4
+    hm_learn[1] = hm_learn[0]
+    hm_learn[2] = hm_learn[0]
+    hm_learn[3] = hm_learn[0]
 
-    obs = data_features[char]
-    oos_obs = data_features[char-1]
-    # obsTA = np.array([ hm_learn.rand(100)[0] for _ in range(10) ])
-    # print(type(obsTA))
-    # print(obsTA[1].shape) == (100,2)
-    # Our data has format (2,15) ! Transpose all datapoints
-    for i in range(len(obs)):
-        obs[i] = np.transpose(obs[i])
-    for i in range(len(oos_obs)):
-        oos_obs[i] = np.transpose(oos_obs[i])
+    for char in range(len(data_features)):
+        # Train and test for X
+        obs = data_features[char]
+        oos_obs = data_features[char - 1]
+        # obsTA = np.array([ hm_learn.rand(100)[0] for _ in range(10) ])
+        # print(type(obsTA))
+        # print(obsTA[1].shape) == (100,2)
+        # Our data has format (2,15) ! Transpose all datapoints
+        for i in range(len(obs)):
+            obs[i] = np.transpose(obs[i])
+        for i in range(len(oos_obs)):
+            oos_obs[i] = np.transpose(oos_obs[i])
 
-    # Data information
-    """
-    print(len(obs))
-    print(obs[len(obs) - 1].shape)
-    print(type(obs))
-    print(obs[1])
-    """
+        # Data information
+        """
+        print(len(obs))
+        print(obs[len(obs) - 1].shape)
+        print(type(obs))
+        print(obs[1])
+        """
 
-    # Divide data into training and testing
-    train_obs = obs[0:3]
-    test_obs = obs[4]
+        # Divide data into training and testing
+        train_obs = obs[0:3]
+        test_obs = obs[4]
 
-    # Training
+        # Training
 
-    print("Running the Baum Welch Algorithm...")
-    hm_learn[char].baum_welch(train_obs, 20, prin=1, uselog=False)
+        print("Running the Baum Welch Algorithm...")
+        hm_learn[char].baum_welch(train_obs, 20, prin=1, uselog=False)
 
-    # Testing on out of sample and test obs
-    a, c = hm_learn[char].alphahat(oos_obs[2])
-    print("Prob oos", c)
-    a, c = hm_learn[char].alphahat(test_obs)
-    print("Prob is", c)
-
-
-
-    # Train and test for A
-    char = 0
-    obs = data_features[char]
-    oos_obs = data_features[char+1]
-    # obsTA = np.array([ hm_learn.rand(100)[0] for _ in range(10) ])
-    # print(type(obsTA))
-    # print(obsTA[1].shape) == (100,2)
-    # Our data has format (2,15) ! Transpose all datapoints
-    for i in range(len(obs)):
-        obs[i] = np.transpose(obs[i])
-    for i in range(len(oos_obs)):
-        oos_obs[i] = np.transpose(oos_obs[i])
-
-    # Data information
-    """
-    print(len(obs))
-    print(obs[len(obs) - 1].shape)
-    print(type(obs))
-    print(obs[1])
-    """
-
-    # Divide data into training and testing
-    train_obs = obs[0:3]
-    test_obs = obs[4]
-
-    # Training
-
-    print("Running the Baum Welch Algorithm...")
-    hm_learn[char].baum_welch(train_obs, 20, prin=1, uselog=False)
-
-    # Testing on out of sample and test obs
-    a, c = hm_learn[char].alphahat(oos_obs[2])
-    print("Prob oos", c)
-    a, c = hm_learn[char].alphahat(test_obs)
-    print("Prob is", c)
-
+        # Testing on out of sample and test obs
+        a, c = hm_learn[char].alphahat(oos_obs[2])
+        print("Prob oos", c)
+        a, c = hm_learn[char].alphahat(test_obs)
+        print("Prob is", c)
 
 
 if __name__ == "__main__":
