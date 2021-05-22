@@ -1,6 +1,6 @@
 import numpy as np
 from PattRecClasses import HMM_TA
-from .classifier import *
+from classifier import *
 
 """
 Inputs: 
@@ -40,7 +40,7 @@ def hmm_test(HMM_Models, test_data, test_labels ):
         result_labels_list.append(result_labels)
         print("Classification accuracy of test samples of character " + str(test_labels[char])  + " is: " + str(accuracies[char]*100) + "%")
         
-    return accuracies, results_labels_list
+    return accuracies, result_labels_list
         
             
             
