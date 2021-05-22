@@ -1,6 +1,6 @@
 from tkinter import *
 import numpy as np
-import time 
+
 
 class DrawCharacter:
     def __init__(self, canvas_dim = 200, thickness = 5):
@@ -14,8 +14,7 @@ class DrawCharacter:
 
         self.root = Tk()
         self.w = Canvas(self.root, width=canvas_dim, height=canvas_dim)
-        
-    
+
     def track(self,event):
         x, y =  event.x , event.y
         translated_y = self.canvas_dim -y
