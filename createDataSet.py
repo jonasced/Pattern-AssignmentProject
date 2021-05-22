@@ -42,6 +42,10 @@ def createDataSet(act=True, name=None):
         if name is None:  # option to provide dbname in input
             name = input("What do you want to save the database file as? : ")
 
+        # Always saves the cdb to the data folder
+        if "data" not in current_path:
+            current_path += "/data/"
+
         file_path_char = os.path.join(current_path, name + ".cdb")
         file_path_feauture = os.path.join(current_path, name + "_features.cdb")
         file_path_labels = os.path.join(current_path, name + "_labels.cdb")

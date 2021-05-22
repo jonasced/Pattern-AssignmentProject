@@ -40,7 +40,6 @@ def sampler(coordinates, thr):
 
     # getting x,y values of the samples for corresponding indices
     sampled_coordinates = coordinates[:, remain_sample_indices]
-    print(len(remain_sample_indices))
 
     return sampled_coordinates
 
@@ -88,14 +87,29 @@ def norm_dist_slope(coordinates, thr):
     
     # we calculate the degrees for each slope between consecutive samples. For cases x = 0 we set x to 0.0001 so that
     # y/x will bi divisible
-    zerox_indices = np.where(rel_dist[0,:] == 0)
-    rel_dist[0,zerox_indices] = 0.0001
-    slope = np.divide(rel_dist[1,:] , rel_dist[0,:] )
+    zerox_indices = np.where(rel_dist[0, :] == 0)
+    rel_dist[0, zerox_indices] = 0.0001
+    slope = np.divide(rel_dist[1, :], rel_dist[0, :])
     slope_inf_indices = np.where(np.absolute(slope) > 1000)
     slope_angle = np.arctan(slope)
     # we set the corresponding angle of the slopes where we were supposed to have infinite to 90 degrees
     slope_angle[slope_inf_indices] = np.deg2rad(90)
-    
+
+    # Filter out outliers WORK IN PROGRESS
+    slopediff = np.diff(slope_angle)
+    for i in range(len(slopediff)-1):
+        if np.abs(slopediff[i]) > np.pi/2:
+            smooth = 8
+            if len(slopediff)-i < smooth:
+                smooth = i-len(slopediff)
+            for j in range(1, smooth):
+                print("Diff detected at ", i, "! Diff ", j, " is:", np.abs(slopediff[i+j]))
+                if np.abs(slopediff[i+j]) > np.pi/2:
+                    print("Remove outlier at index", i, " to ", i+j)
+                    print(slope_angle[i:i+j])
+                    slope_angle[i:i+j] = slope_angle[i+j]  # + np.random.rand(1)*5  # TODO IMPLEMENT RANDOM
+                    print(slope_angle[i+j], slope_angle[i:i+j])
+
     # reshaping arrays for concatenating properly
     abs_dist = np.reshape(abs_dist,(1,abs_dist.size))
     slope_angle = np.reshape(slope_angle,(1,slope_angle.size))
