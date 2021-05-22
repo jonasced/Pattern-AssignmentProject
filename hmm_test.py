@@ -18,10 +18,24 @@ Output:
  
 
 """
-def hmm_test(HMM_Models, test_data, test_labels ):
-    num_class = len(HMM_Models)
+
+
+def hmm_test(HMM_Models, test_data, test_labels, useprint=True):
+
+    # Vary function depending on if list of model or single model is being evaluated
+    if str(type(HMM_Models)) == "<class 'PattRecClasses.HMM_TA.HMM'>":
+        num_class = 1
+    elif str(type(HMM_Models)) == "<class 'list'>":
+        num_class = len(HMM_Models)
+    else:
+        raise Exception("Invalid input model type: ", type(HMM_Models), ", should be either list or HMM.")
+
     accuracies = np.zeros(num_class)
     result_labels_list = []
+
+    if useprint:
+        print("************* CLASSIFICATION RESULTS ************* ")
+
     for char in range(num_class):
         
         result_labels = []
@@ -29,7 +43,8 @@ def hmm_test(HMM_Models, test_data, test_labels ):
         num_samples = len(samples)
         truth_label = test_labels[char]
         correct_count = 0
-        # for each sample I am calculating the classification result label and compare it with its true label. If they are equal, it is classified correctly
+        # for each sample I am calculating the classification result label and compare it with its true label. If they
+        # are equal, it is classified correctly
         for sample in samples:
             result_label = classifier(HMM_Models,test_labels, sample)
             result_labels.append(result_label)
@@ -38,9 +53,16 @@ def hmm_test(HMM_Models, test_data, test_labels ):
                 
         accuracies[char] = correct_count / num_samples
         result_labels_list.append(result_labels)
-        print("Classification accuracy of test samples of character " + str(test_labels[char])  + " is: " + str(accuracies[char]*100) + "%")
+
+        if useprint:
+            print("Classification accuracy of test samples of character " + str(test_labels[char])  + " is: " + str(accuracies[char]*100) + "%")
         
     return accuracies, result_labels_list
-        
-            
-            
+
+
+def main():
+    pass
+
+
+if __name__ == "__main__":
+    main()

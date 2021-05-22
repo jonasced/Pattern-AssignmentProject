@@ -3,7 +3,7 @@ from PattRecClasses import HMM_TA
 import pandas as pd
 
 
-def hmm_gen(data_features, thr, useprint=False):
+def hmm_gen(data_features, thr, useprint=True):
     """ hmms = hmm_gen(data_features,thr): Generates hmm models with feasible starting distributions, to be used in training.
     Input:
         data_features[k][r] : np.array (featdim, t), K letters, R samples, Tr lengths
@@ -101,6 +101,7 @@ def hmm_gen(data_features, thr, useprint=False):
             print("Bstar mean:", means, "covariance:", covsstar)
             print("\n")
 
+        # Create HMM and add to list
         hmms += [HMM_TA.HMM(qstar, Astar, Bstar, finite=True)]
 
     return hmms

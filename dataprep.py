@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def dataprep(db_name, max_labels=0, max_samples=0, nr_test=5, shuffle=False):
+def dataprep(db_name, max_labels=0, max_samples=0, nr_test=5, shuffle=False, useprint=True):
     """ train_data, test_data = dataprep(db_name, data_diff)
     Input:
         db_name:
@@ -15,7 +15,8 @@ def dataprep(db_name, max_labels=0, max_samples=0, nr_test=5, shuffle=False):
     data_features = pd.read_pickle(r'data/' + db_name + '_features.cdb')
     data_labels = pd.read_pickle(r'data/' + db_name + '_labels.cdb')
 
-    print("\nDatabase read is ", db_name)
+    if useprint:
+        print("\nDatabase read is ", db_name)
 
     K = len(data_labels)  # number of characters in data set
     R = len(data_features[0])  # number of samples of each character in data set; here uniform values
@@ -24,13 +25,16 @@ def dataprep(db_name, max_labels=0, max_samples=0, nr_test=5, shuffle=False):
     if max_labels != 0:
         data_labels = data_labels[0:max_labels]
         K = max_labels
-        print("Maximum number of labels used is ", max_labels)
+        if useprint:
+            print("OPTION USED: Maximum number of labels used is ", max_labels)
     if max_samples != 0:
         R = max_samples
-        print("Maximum number of samples used is ", R)
+        if useprint:
+            print("OPTION USED: Maximum number of samples used is ", R)
 
-    print("Labels used are ", data_labels)
-    print("Total training samples are ", R - nr_test, " and testing samples are ", nr_test, "\n")
+    if useprint:
+        print("Labels used are ", data_labels)
+        print("Total training samples are ", R - nr_test, " and testing samples are ", nr_test, "\n")
 
     train_data = []
     test_data = []

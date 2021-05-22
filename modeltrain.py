@@ -3,7 +3,7 @@ from hmm_gen import hmm_gen
 from dataprep import dataprep
 
 
-def modeltrain(train_data, labels, iter, useprint=False):
+def modeltrain(train_data, labels, iter, useprint=True):
     """
     hmm_learn, train_acc = modeltrain(train_data, labels): Trains hmms and outputs them in a list
 
@@ -17,7 +17,7 @@ def modeltrain(train_data, labels, iter, useprint=False):
             to the specific model
     """
     # Initialize hmms with feasible parameters
-    hmm_learn = hmm_gen(train_data, 10, useprint=False)
+    hmm_learn = hmm_gen(train_data, 10, useprint=useprint)
 
     # Training
     train_acc = []
@@ -26,7 +26,11 @@ def modeltrain(train_data, labels, iter, useprint=False):
         print("\n ------------ CHARACTER ", labels[k], "------------")
 
         # Train the model using baum welch
-        hmm_learn[k].baum_welch(train_data[k], iter, prin=1, uselog=False)
+        if useprint:
+            val = 1
+        else:
+            val = 0
+        hmm_learn[k].baum_welch(train_data[k], iter, prin=val, uselog=False)
 
         # Training accuracy
         lprob_list = []
@@ -43,7 +47,8 @@ def modeltrain(train_data, labels, iter, useprint=False):
         # Calculates the average training accuracy
         avg = np.mean(np.array(lprob_list))
         train_acc += [avg]
-        print("Avg probability over test samples is", np.exp(avg))
+        print("Number of states: ", len(hmm_learn[k].q))
+        print("Avg probability for entire sequence over test samples is", avg, " (log), ", np.exp(avg)*100, "%")
 
     return hmm_learn, train_acc
 
