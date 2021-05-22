@@ -19,22 +19,28 @@ def modeltrain(train_data, labels, iter, useprint=False):
     # Initialize hmms with feasible parameters
     hmm_learn = hmm_gen(train_data, 10, useprint=False)
 
+    # Training
     train_acc = []
     K = len(train_data)
     for k in range(K):
         print("\n ------------ CHARACTER ", labels[k], "------------")
 
-        # Training
+        # Train the model using baum welch
         hmm_learn[k].baum_welch(train_data[k], iter, prin=1, uselog=False)
 
         # Training accuracy
         lprob_list = []
         for r in range(len(train_data[k])):
             a, c = hmm_learn[k].alphahat(train_data[k][r])
-            # print("c is", c)
             clog = np.log(c)
             lprob = np.sum(np.array(clog))
             lprob_list += [lprob]
+
+            # Prints probability of each step in sequence
+            if useprint:
+                print("c is", c)
+
+        # Calculates the average training accuracy
         avg = np.mean(np.array(lprob_list))
         train_acc += [avg]
         print("Avg probability over test samples is", np.exp(avg))
