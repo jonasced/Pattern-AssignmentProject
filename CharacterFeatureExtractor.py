@@ -95,7 +95,7 @@ def norm_dist_slope(coordinates, thr):
     # we set the corresponding angle of the slopes where we were supposed to have infinite to 90 degrees
     slope_angle[slope_inf_indices] = np.deg2rad(90)
 
-    # Filter out outliers
+    # Filter out outliers WORK IN PROGRESS
     slopediff = np.diff(slope_angle)
     for i in range(len(slopediff)-1):
         if np.abs(slopediff[i]) > np.pi/2:
@@ -107,8 +107,8 @@ def norm_dist_slope(coordinates, thr):
                 if np.abs(slopediff[i+j]) > np.pi/2:
                     print("Remove outlier at index", i, " to ", i+j)
                     print(slope_angle[i:i+j])
-                    slope_angle[i:i+j] = slope_angle[i+j]
-                    print(slope_angle[i+j],slope_angle[i:i+j])
+                    slope_angle[i:i+j] = slope_angle[i+j]  # + np.random.rand(1)*5  # TODO IMPLEMENT RANDOM
+                    print(slope_angle[i+j], slope_angle[i:i+j])
 
     # reshaping arrays for concatenating properly
     abs_dist = np.reshape(abs_dist,(1,abs_dist.size))
