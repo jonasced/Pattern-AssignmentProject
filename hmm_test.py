@@ -1,7 +1,7 @@
 from classifier import *
 
 
-def hmm_test(HMM_Models, test_data, test_labels, useprint=True):
+def hmm_test(HMM_Models, test_data, test_labels, useprint=True, chars=[]):
     """
     Inputs:
         1) List of Class Models
@@ -18,13 +18,15 @@ def hmm_test(HMM_Models, test_data, test_labels, useprint=True):
 
 
     """
-    # Vary function depending on if list of model or single model is being evaluated
-    if str(type(HMM_Models)) == "<class 'PattRecClasses.HMM_TA.HMM'>":
-        num_class = 1
-    elif str(type(HMM_Models)) == "<class 'list'>":
-        num_class = len(HMM_Models)
+    if str(type(HMM_Models)) == "<class 'list'>":
+        pass
     else:
-        raise Exception("Invalid input model type: ", type(HMM_Models), ", should be either list or HMM.")
+        raise Exception("Invalid input model type: ", type(HMM_Models), ", should be list of HMMs")
+
+    num_class = len(HMM_Models)
+
+    if len(chars) == 0:
+        chars = range(num_class)
 
     accuracies = np.zeros(num_class)
     result_labels_list = []
@@ -32,7 +34,7 @@ def hmm_test(HMM_Models, test_data, test_labels, useprint=True):
     if useprint:
         print("************* CLASSIFICATION RESULTS ************* ")
 
-    for char in range(num_class):
+    for char in chars:
         
         result_labels = []
         samples = test_data[char]
@@ -43,7 +45,7 @@ def hmm_test(HMM_Models, test_data, test_labels, useprint=True):
         # are equal, it is classified correctly
         for sample in samples:
             # Input into classifier
-            result_label = classifier(HMM_Models,test_labels, sample)
+            result_label = classifier(HMM_Models,test_labels, sample, useprint=useprint)
             result_labels.append(result_label)
             if result_label == truth_label:
                 correct_count += 1
@@ -51,8 +53,8 @@ def hmm_test(HMM_Models, test_data, test_labels, useprint=True):
         accuracies[char] = correct_count / num_samples
         result_labels_list.append(result_labels)
 
-        if useprint:
-            print("Classification accuracy of test samples of character " + str(test_labels[char])  + " is: " + str(accuracies[char]*100) + "%")
+        # if useprint:
+        print("Classification accuracy of test samples of character " + str(test_labels[char])  + " is: " + str(accuracies[char]*100) + "%")
         
     return accuracies, result_labels_list
 
@@ -61,12 +63,12 @@ def main():
     from dataprep import dataprep
     import pandas as pd
 
-    db_name = "database_inc_sampchar"
-    train_data, test_data, data_labels = dataprep(db_name, nr_test=5)
+    db_name = "Bigdata"
+    train_data, test_data, data_labels = dataprep(db_name, nr_test=10)
 
-    hmm_learn = pd.read_pickle(r'legit_hmm')
+    hmm_learn = pd.read_pickle(r'HMM_Model.model')
 
-    accuracies, result_labels_list = hmm_test(hmm_learn, test_data, data_labels)
+    accuracies, result_labels_list = hmm_test(hmm_learn, test_data, data_labels, useprint=False, chars=[])
 
 
 if __name__ == "__main__":
