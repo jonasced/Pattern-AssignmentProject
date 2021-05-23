@@ -205,18 +205,30 @@ class HMM:
         xibar = np.sum(xirbars, axis=0)
         return xibar
 
-    def printoutput(self, newmean, newcov):
+    def printoutput(self, newmean=None, newcov=None):
         print("Estimated q:")
         print(self.q)
         print()
         print("Estimated A:")
         print(self.A)
         print()
-        print("Estimated means:")
-        print(newmean)
-        print()
-        print("Estimated covariances:")
-        print(newcov)
+        if newmean is None:
+            means = ""
+            covs = ""
+            for i in range(len(self.B)):
+                means += str(self.B[i].getmean()) + " "
+                covs += str(self.B[i].getcov()) + " "
+            print("Estimated means:", means)
+            print()
+            print("Estimated covariances:", covs)
+            print()
+
+        else:
+            print("Estimated means:")
+            print(newmean)
+            print()
+            print("Estimated covariances:")
+            print(newcov)
 
     '''
     Baum-Welch Algorithm for learning HMM parameters from observations
