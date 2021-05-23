@@ -3,11 +3,11 @@ from PattRecClasses import HMM_TA
 import pandas as pd
 
 
-def hmm_gen(data_features, nStates, useprint=True, longest_sample = False):
+def hmm_gen(data_features, num_states, useprint=True, longest_sample = False):
     """ hmms = hmm_gen(data_features,thr): Generates hmm models with feasible starting distributions, to be used in training.
     Input:
         data_features[k][r] : np.array (featdim, t), K letters, R samples, Tr lengths
-        nStates : number of states to be included in in hmm model for each class
+        num_States : number of states to be included in in hmm model for each class. If it is an array, each position will contain num of states for corresponding class
     Output:
         hmms : list of generated HMM models with approximately ok parameters
 
@@ -42,6 +42,14 @@ def hmm_gen(data_features, nStates, useprint=True, longest_sample = False):
         samples0 = []
         samples1 = []
         T = obs.shape[0]
+        if  isinstance(num_states, (np.ndarray, np.generic) ):
+            if num_states.size == 1:
+                nStates = num_states
+            else:
+                nStates = num_states[k]
+        else:
+            nStates = num_states
+            
         sample_amount = int(T/nStates)
         for i in range(nStates):
             if i+1 == nStates: # if it is last state, include all the remaining samples in observation
