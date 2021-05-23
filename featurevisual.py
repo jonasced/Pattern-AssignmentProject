@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def featurevisual(data_features, data_labels, data_sampchar, chars=[]):
+def featurevisual(data_features, data_labels, data_sampchar, chars=[], plt_num=0, model=False):
     if len(chars) == 0:
         chars = range(len(data_labels))
     for char in chars:
@@ -12,9 +12,18 @@ def featurevisual(data_features, data_labels, data_sampchar, chars=[]):
         # raw_obs = data[char]
         sampchar = data_sampchar[char]
 
-        plt_num = len(data_features)  # number of samples plotted
+        if plt_num == 0:
+            plt_num = len(data_features[char])  # number of samples plotted
+        if plt_num == 1:
+            print("This does not work with the current axis, please plot at least 2 samples")
+            plt_num = 2
+
         f, axarr = plt.subplots(3, plt_num, dpi = 200)
-        f.suptitle('Scale & Position Effect of letter '+data_labels[char], fontsize=10)
+
+        if model:
+            f.suptitle('Random sequences from HMM model of ' + data_labels[char], fontsize=10)
+        else:
+            f.suptitle('Scale & Position Effect of letter '+data_labels[char], fontsize=10)
 
         for i in range(plt_num):
 
@@ -24,30 +33,43 @@ def featurevisual(data_features, data_labels, data_sampchar, chars=[]):
             # normalized distance ,slope, and t for symbol-1
             f1_symbol1 = feature_symbol1[0]
             f2_symbol1 = feature_symbol1[1]
-            t1 = np.array(range(0,feature_symbol1.shape[1]))
+            t1 = np.array(range(0, feature_symbol1.shape[1]))
 
             # mean and number of states required:
             # killgissa?
 
             # ------------- SYMBOL DRAWINGS
             # Drawing of sampled symbol-1
-            axarr[0, i].scatter(sampled_symbol1[0], sampled_symbol1[1])
+            if not model:
+                axarr[0, i].scatter(sampled_symbol1[0], sampled_symbol1[1])
+            else:
+                axarr[0, i].plot(t1, sampled_symbol1)
             # axarr[0, i].set(xlabel = "X-Coordinate", ylabel = "Y-Coordinate")
             # axarr[0, i].set_title('Symbol-1')
-            axarr[0, i].set_xlim([0,210])
-            axarr[0, i].set_ylim([0,210])
+
 
             # ------------- ABSOLUTE DISTANCE FEATURE
             # Absolute distance plot of symbol-1
             axarr[1, i].plot(t1, f1_symbol1)
             # axarr[1, i].set(xlabel = "Time", ylabel = "Normalized Distance")
-            axarr[1, i].set_ylim([0,np.max(f1_symbol1)])
+
 
             # ------------- SLOPE FEATURE
             # Y-wise distance plot of symbol-1
             axarr[2, i].plot(t1, f2_symbol1)
             # axarr[2, i].set(xlabel = "Time", ylabel = "Slope(Degrees)")
-            axarr[2, i].set_ylim([-120,120])
+
+            if not model:
+                axarr[0, i].set_xlim([0,210])
+                axarr[0, i].set_ylim([0,210])
+
+                axarr[1, i].set_ylim([0,np.max(f1_symbol1)])
+
+                axarr[2, i].set_ylim([-120,120])
+            else:
+                axarr[0, i].set_ylim([-1, np.max(sampled_symbol1) + 1])
+                axarr[1, i].set_ylim([-5, np.max(f1_symbol1)])
+                axarr[2, i].set_ylim([-120, 120])
 
         plt.show()
 
