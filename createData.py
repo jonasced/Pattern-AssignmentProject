@@ -28,6 +28,7 @@ def createData(plot=True, save=True):
         axarr = axarr.reshape(-1,1)
         f.suptitle('Char Feature Check for Char Database', fontsize=20)
 
+
         # ------------- SYMBOL DRAWINGS
         # Drawing of sampled symbol
         axarr[0, 0].scatter(sampled_symbol[0], sampled_symbol[1])
@@ -66,11 +67,11 @@ def createData(plot=True, save=True):
 
         # Asking if user wants to save the file
         saveit = None
-        decision = input("Do you want to save it? ('y' for yes, 'n' for no): ")
+        decision = input("Do you want to save it? ('y' or 'Y' for yes, 'n' or 'N' for no): ")
 
-        if decision == "y":
+        if decision == "y" or decision == "Y":
             saveit = True
-        elif decision == "n":
+        elif decision == "n" or decision == "N":
             saveit = False
 
         # If user wants to save the file, asking for its name and saving the file to the location of current file

@@ -5,7 +5,7 @@ from CharacterFeatureExtractor import *
 
 def createDataSet(act=True, name=None):
     num_char = 10
-    num_sample = 20
+    num_sample = 30
     char_labels = ["A", "C", "K", "P", "X", "T", "+", "N", "V", "4"]
     current_path = os.path.dirname(os.path.abspath(__file__))
     list_of_char_lists = []
@@ -60,7 +60,7 @@ def createDataSet(act=True, name=None):
 
 
 def main():
-    createDataSet(act=False, name="newtest")
+    createDataSet(act=False, name="Bigdata")
 
 
 if __name__ == "__main__":
