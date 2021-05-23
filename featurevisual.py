@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def featurevisual(data_features, data_labels, data_sampchar, chars=[], plt_num=0, model=False):
+def featurevisual(data_features, data_labels, data_sampchar, chars=[], plt_num=[], model=False):
     if len(chars) == 0:
         chars = range(len(data_labels))
     for char in chars:
@@ -12,23 +12,30 @@ def featurevisual(data_features, data_labels, data_sampchar, chars=[], plt_num=0
         # raw_obs = data[char]
         sampchar = data_sampchar[char]
 
-        if plt_num == 0:
-            plt_num = len(data_features[char])  # number of samples plotted
-        if plt_num == 1:
-            print("This does not work with the current axis, please plot at least 2 samples")
-            plt_num = 2
+        if len(plt_num) == 0:
+            plt_num = range(len(data_features[char]))
+            f, axarr = plt.subplots(3, len(data_features[char]), dpi=200)
+        elif len(plt_num) == 1:
+            print("One number inputed interpreted as number of samples to be shown")
+            f, axarr = plt.subplots(3, plt_num[0], dpi=200)
+            plt_num = range(plt_num[0])
+        else:
+            f, axarr = plt.subplots(3, len(plt_num), dpi=200)
 
-        f, axarr = plt.subplots(3, plt_num, dpi = 200)
 
         if model:
             f.suptitle('Random sequences from HMM model of ' + data_labels[char], fontsize=10)
         else:
             f.suptitle('Scale & Position Effect of letter '+data_labels[char], fontsize=10)
 
-        for i in range(plt_num):
+        axarr[1, 0].set(xlabel="Time", ylabel="Normalized Distance")
+        axarr[2, 0].set(xlabel="Time", ylabel="Slope(Degrees)")
 
-            feature_symbol1 = obs[i]
-            sampled_symbol1 = sampchar[i]
+        i = 0
+        for samp in plt_num:
+
+            feature_symbol1 = obs[samp]
+            sampled_symbol1 = sampchar[samp]
 
             # normalized distance ,slope, and t for symbol-1
             f1_symbol1 = feature_symbol1[0]
@@ -70,13 +77,6 @@ def featurevisual(data_features, data_labels, data_sampchar, chars=[], plt_num=0
                 axarr[0, i].set_ylim([-1, np.max(sampled_symbol1) + 1])
                 axarr[1, i].set_ylim([-5, np.max(f1_symbol1)])
                 axarr[2, i].set_ylim([-120, 120])
+            i += 1
 
         plt.show()
-
-        """ Observed results:
-        X: 2 states, 
-        f1s1mean=10
-        f1s2mean=45
-        f2s1mean=-60
-        f2s2mean=70
-        """
