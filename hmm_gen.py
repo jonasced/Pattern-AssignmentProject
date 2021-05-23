@@ -3,11 +3,11 @@ from PattRecClasses import HMM_TA
 import pandas as pd
 
 
-def hmm_gen(data_features, thr, useprint=True):
+def hmm_gen(data_features, num_states, useprint=True, longest_sample = False):
     """ hmms = hmm_gen(data_features,thr): Generates hmm models with feasible starting distributions, to be used in training.
     Input:
         data_features[k][r] : np.array (featdim, t), K letters, R samples, Tr lengths
-        thr : int, threshold of where we implement state transitions
+        num_States : number of states to be included in in hmm model for each class. If it is an array, each position will contain num of states for corresponding class
     Output:
         hmms : list of generated HMM models with approximately ok parameters
 
@@ -27,34 +27,66 @@ def hmm_gen(data_features, thr, useprint=True):
     K = len(data_features)
     for k in range(K):
         obs_list = data_features[k]
+        
         obs = obs_list[0]  # taking one arbitrary sample and using it!
+        # If longest_sample setting is True we are looking for the longest observation for the specific class to have a
+        # more reliable solution with high res.
+        if longest_sample:
+            num_obs = len(obs_list)
+            t_lengths = np.zeros(num_obs)
+            for o in range(num_obs):
+                t_lengths[o] = obs_list[o].shape[0]
+            maxt_index = np.argmax(t_lengths)
+            obs = obs_list[maxt_index]
 
-        sample_state = []
+        # sample_state = []
         samples0 = []
         samples1 = []
-        start = 0
-        count = 0
         T = obs.shape[0]
-        for x in range(T):
-            count += 1
-            if x == T-1:
-                if not start == T-1:
-                    sample_state += [x]
-                    sample0 = np.array(obs[start-1:x, 0])
-                    sample1 = np.array(obs[start-1:x, 1])
-                    samples0 += [sample0]
-                    samples1 += [sample1]
-            elif ((obs[x+1, 0] - obs[x, 0]) > thr or (obs[x + 1, 1] - obs[x, 1]) > thr) and count > 2:
-                sample_state += [x]
-                sample0 = np.array(obs[start:x+1, 0])
-                sample1 = np.array(obs[start:x+1, 1])
+        if  isinstance(num_states, (np.ndarray, np.generic) ):
+            if num_states.size == 1:
+                nStates = num_states
+            else:
+                nStates = num_states[k]
+        else:
+            nStates = num_states
+            
+        sample_amount = int(T/nStates)
+        for i in range(nStates):
+            if i+1 == nStates: # if it is last state, include all the remaining samples in observation
+                sample0 = np.array(obs[i*sample_amount :, 0 ])
+                sample1 = np.array(obs[i*sample_amount :, 1 ])
+                samples0 += [sample0]
+                samples1 += [sample1]
+            else:
+                sample0 = np.array(obs[i*sample_amount : (i+1)*sample_amount,0 ])
+                sample1 = np.array(obs[i*sample_amount : (i+1)*sample_amount,1 ])
                 samples0 += [sample0]
                 samples1 += [sample1]
 
-                start = x+1
-                count = 0
+        # start = 0
+        # count = 0
+        # T = obs.shape[0]
+        # for x in range(T):
+        #     count += 1
+        #     if x == T-1:
+        #         if not start == T-1:
+        #             sample_state += [x]
+        #             sample0 = np.array(obs[start-1:x, 0])
+        #             sample1 = np.array(obs[start-1:x, 1])
+        #             samples0 += [sample0]
+        #             samples1 += [sample1]
+        #     elif ((obs[x+1, 0] - obs[x, 0]) > thr or (obs[x + 1, 1] - obs[x, 1]) > thr) and count > 2:
+        #         sample_state += [x]
+        #         sample0 = np.array(obs[start:x+1, 0])
+        #         sample1 = np.array(obs[start:x+1, 1])
+        #         samples0 += [sample0]
+        #         samples1 += [sample1]
 
-        nStates = len(sample_state)
+        #         start = x+1
+        #         count = 0
+
+        # nStates = len(sample_state)
 
         # Estimate means of each state sequence
         means = np.empty([nStates, 2])

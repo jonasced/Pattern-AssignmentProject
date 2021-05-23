@@ -3,7 +3,7 @@ from hmm_gen import hmm_gen
 from dataprep import dataprep
 
 
-def modeltrain(train_data, labels, iter, useprint=True):
+def modeltrain(train_data, labels, iter, num_states, longest_sample=False, useprint=True):
     """
     hmm_learn, train_acc = modeltrain(train_data, labels): Trains hmms and outputs them in a list
 
@@ -17,12 +17,20 @@ def modeltrain(train_data, labels, iter, useprint=True):
             to the specific model
     """
     # Initialize hmms with feasible parameters
-    hmm_learn = hmm_gen(train_data, 10, useprint=useprint)
+    hmm_learn = hmm_gen(train_data, num_states, longest_sample=longest_sample, useprint=useprint)
+
 
     # Training
     train_acc = []
     K = len(train_data)
     for k in range(K):
+        if  isinstance(num_states, (np.ndarray, np.generic) ):
+            if num_states.size == 1:
+                nStates = num_states
+            else:
+                nStates = num_states[k]
+        else:
+            nStates = num_states
         print("\n ------------ CHARACTER ", labels[k], "------------")
 
         # Train the model using baum welch
@@ -49,6 +57,7 @@ def modeltrain(train_data, labels, iter, useprint=True):
         train_acc += [avg]
         print("Number of states: ", len(hmm_learn[k].q))
         print("Avg probability for entire sequence over test samples is", avg, " (log), ", np.exp(avg)*100, "%")
+        print("Normalized score: " , np.exp(avg)*100* (10**nStates))
 
     return hmm_learn, train_acc
 

@@ -47,6 +47,7 @@ def dataprep(db_name, max_labels=0, max_samples=0, nr_test=5, shuffle=False, use
 
         # Data preprocessing: invert data s.t. it fits the HMM_TA class.
         for r in range(R):
+
             data_features[k][r] = np.transpose(data_features[k][r])
 
         # Divide data into training and testing

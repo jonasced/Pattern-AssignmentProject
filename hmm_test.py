@@ -1,27 +1,23 @@
-import numpy as np
-from PattRecClasses import HMM_TA
 from classifier import *
-
-"""
-Inputs: 
-    1) List of Class Models
-    2) test data [k] [r] > collection of test data containing features, k = number of class r= number of sample per class:
-    classlist[ samplelist[ features in np.array format ] ]
-    3) list of class labels of test classes in test data
-Output: 
-    1) array of classification accuracy for each test class
-    2) list of label lists that each lists contains the result labels of a specific test class that classifier labeled as
-    for example:
-        first class has 10 samples
-        each sample is labeled with classifier
-        first list in results_labels_list will contain the labels that classifier decided on the samples of that test class
- 
-
-"""
 
 
 def hmm_test(HMM_Models, test_data, test_labels, useprint=True):
+    """
+    Inputs:
+        1) List of Class Models
+        2) test data [k] [r] > collection of test data containing features, k = number of class r= number of sample per class:
+        classlist[ samplelist[ features in np.array format ] ]
+        3) list of class labels of test classes in test data
+    Output:
+        1) array of classification accuracy for each test class
+        2) list of label lists that each lists contains the result labels of a specific test class that classifier labeled as
+        for example:
+            first class has 10 samples
+            each sample is labeled with classifier
+            first list in results_labels_list will contain the labels that classifier decided on the samples of that test class
 
+
+    """
     # Vary function depending on if list of model or single model is being evaluated
     if str(type(HMM_Models)) == "<class 'PattRecClasses.HMM_TA.HMM'>":
         num_class = 1
@@ -46,6 +42,7 @@ def hmm_test(HMM_Models, test_data, test_labels, useprint=True):
         # for each sample I am calculating the classification result label and compare it with its true label. If they
         # are equal, it is classified correctly
         for sample in samples:
+            # Input into classifier
             result_label = classifier(HMM_Models,test_labels, sample)
             result_labels.append(result_label)
             if result_label == truth_label:
@@ -61,7 +58,15 @@ def hmm_test(HMM_Models, test_data, test_labels, useprint=True):
 
 
 def main():
-    pass
+    from dataprep import dataprep
+    import pandas as pd
+
+    db_name = "database_inc_sampchar"
+    train_data, test_data, data_labels = dataprep(db_name, nr_test=5)
+
+    hmm_learn = pd.read_pickle(r'legit_hmm')
+
+    accuracies, result_labels_list = hmm_test(hmm_learn, test_data, data_labels)
 
 
 if __name__ == "__main__":

@@ -44,7 +44,7 @@ def sampler(coordinates, thr):
     return sampled_coordinates
 
 
-def norm_dist_slope(coordinates, thr):
+def norm_dist_slope(coordinates, thr, legacy=False):
     """ Calculates a metric for scale of the symbol which is used to normalize large distances between two samples.
      Adds the large distance to the remaining values.
      Calculates the polar coordinates (absolute distance and slope) of the input coordinates and adds random noise to
@@ -96,19 +96,21 @@ def norm_dist_slope(coordinates, thr):
     slope_angle[slope_inf_indices] = np.deg2rad(90)
 
     # Filter out outliers WORK IN PROGRESS
-    slopediff = np.diff(slope_angle)
-    for i in range(len(slopediff)-1):
-        if np.abs(slopediff[i]) > np.pi/2:
-            smooth = 8
-            if len(slopediff)-i < smooth:
-                smooth = i-len(slopediff)
-            for j in range(1, smooth):
-                print("Diff detected at ", i, "! Diff ", j, " is:", np.abs(slopediff[i+j]))
-                if np.abs(slopediff[i+j]) > np.pi/2:
-                    print("Remove outlier at index", i, " to ", i+j)
-                    print(slope_angle[i:i+j])
-                    slope_angle[i:i+j] = slope_angle[i+j]  # + np.random.rand(1)*5  # TODO IMPLEMENT RANDOM
-                    print(slope_angle[i+j], slope_angle[i:i+j])
+    if not legacy:
+        slopediff = np.diff(slope_angle)
+        for i in range(len(slopediff)-1):
+            if np.abs(slopediff[i]) > np.pi/2:
+                smooth = 4
+                if len(slopediff)-i < smooth:
+                    smooth = i-len(slopediff)
+                for j in range(1, smooth):
+                    print("Diff detected at ", i, "! Diff ", j, " is:", np.abs(slopediff[i+j]))
+                    if np.abs(slopediff[i+j]) > np.pi/2:
+                        print("Remove outlier at index", i, " to ", i+j)
+                        print(slope_angle[i:i+j])
+                        for k in range(i, i+j+1):
+                            slope_angle[k] = slope_angle[i+j+1] + np.random.rand(1)*3
+                        print(slope_angle[i+j], slope_angle[i:i+j])
 
     # reshaping arrays for concatenating properly
     abs_dist = np.reshape(abs_dist,(1,abs_dist.size))
@@ -128,7 +130,7 @@ def norm_dist_slope(coordinates, thr):
 
 # Final feature extractor
 
-def featureExtractor(symbol, thr, input_is_dc=True):
+def featureExtractor(symbol, thr, input_is_dc=True, legacy=True):
     """ Extracts feature vector from object of DrawCharacter
 
     Input:    symbol              object of DrawCharacter containing a drawn character
@@ -142,11 +144,11 @@ def featureExtractor(symbol, thr, input_is_dc=True):
         xyb_values = symbol.get_xybpoints()
         xyb_cleaned = removeZero(xyb_values)
         sampled_symbol = sampler(xyb_cleaned, thr)
-        feature_symbol = norm_dist_slope(sampled_symbol, thr)
+        feature_symbol = norm_dist_slope(sampled_symbol, thr, legacy=legacy)
     else:
         xyb_cleaned = removeZero(symbol)
         sampled_symbol = sampler(xyb_cleaned, thr)
-        feature_symbol = norm_dist_slope(sampled_symbol, thr)
+        feature_symbol = norm_dist_slope(sampled_symbol, thr, legacy=legacy)
  
     return feature_symbol, sampled_symbol
 

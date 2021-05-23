@@ -16,7 +16,7 @@ def createData(plot=True, save=True):
 
     # Feature vectors are returned
     thr = 8  # threshold for sampling and distance normalization
-    feature_symbol, sampled_symbol = featureExtractor(pts, thr, False)
+    feature_symbol, sampled_symbol = featureExtractor(pts, thr, input_is_dc=False)
 
     if plot:
         # normalized distance ,slope, and t for symbol-1
@@ -24,7 +24,7 @@ def createData(plot=True, save=True):
         f2_symbol = feature_symbol[1]
         t = np.array(range(0,feature_symbol.shape[1]))
 
-        f, axarr = plt.subplots(3,1)
+        f, axarr = plt.subplots(3,1, dpi=200)
         axarr = axarr.reshape(-1,1)
         f.suptitle('Char Feature Check for Char Database', fontsize=20)
 
